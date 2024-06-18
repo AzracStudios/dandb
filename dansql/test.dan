@@ -1,0 +1,73 @@
+select database xyz;
+
+
+~~~~~~~~~~
+~ CREATE ~
+~~~~~~~~~~
+create database xyz;
+
+create table users {
+  id: int
+  name: string
+  password: string
+  email: string
+};
+
+write to users {
+  id = 123
+  name = "Michael"
+  email = "iamphysics@gmail.com"
+  password = "aksdfjnakjsdfkj"
+};
+
+~~~~~~~~
+~ READ ~
+~~~~~~~~
+fetchall from users [*];
+
+fetchall from users [*] {
+  id > 0
+};
+
+fetchone from users [*] {
+  name = "Bob"
+  email = "veryrealemail@gmail.com"
+};
+
+
+
+~~~~~~~~~~
+~ UPDATE ~
+~~~~~~~~~~
+fetchone from users [*] {
+  name = "Bob"
+  email = "veryrealemail@gmail.com"
+} update {
+  name += " Cat"
+};
+
+
+update table users {
+  newcol age: int    ~ add an age column
+  name: int          ~ change type of name to int
+  delete email       ~ delete email column
+};
+
+
+~~~~~~~~~~
+~ DELETE ~
+~~~~~~~~~~
+fetchone from users [*] {
+  name = "Bob"
+} delete;
+
+delete table users;
+
+delete xyz;
+
+
+~~~~~~~~~~
+~ COMMIT ~
+~~~~~~~~~~
+commit;
+

@@ -1,0 +1,41 @@
+CREATE:
+
+<KWRD: create> <KWRD: database> <IDENT: name> <SEMICOL>
+
+<KWRD: create> <KWRD: table> <IDENT: name> <SEMICOL>
+
+<KWRD: create> <KWRD: table> <IDENT: name> <LBRACE>
+(<IDENT: colname> <COL> <KWRD: int|float|string|bool|list> <NL>)*
+<RBRACE> <SEMICOL>
+
+<KWRD: write> <KWRD: to> <IDENT: tablename> <LBRACE>
+  (<IDENT: colname> <EQL> <int|float|string|bool|list> <NL>)*
+<RBRACE> <SEMICOL>
+
+
+READ & UPDATE VALUES:
+
+<KWRD: fetchall | fetchone> <KWRD: from> <IDENT: tablename> <LSQR> ((<IDENT: colname><COMMA>)* | <ASTERISK>) <RSQR> (
+<LBRACE> 
+  (<IDENT: colname> <COMPARE_OP> <NL>)* 
+<RBRACE>
+(<KWRD: delete> | (
+  <KWRD: update> <LBRACE>
+  (<IDENT: colname> <ASSIGN_OP> <NL>)*
+  <RBRACE> <SEMICOL>
+))| <SEMICOL>)? 
+
+
+UPDATE TABLE:
+
+<KWRD: update> <KWRD: table> <IDENT: tablename> <LBRACE>
+((<KWRD: newcol>? <IDENT: colname> <COL> <KWRD: int|float|string|bool|list> <NL>) | <KWRD: delete> <IDENT: colname>)*
+<RBRACE> <SEMICOL>
+
+
+DELETE TABLE | DB:
+<KWRD: delete> <KWRD: table> <IDENT: tablename> <SEMICOL>
+<KWRD: delete> <IDENT: tablename> <SEMICOL>
+
+COMMIT:
+<KWRD: commit> <SEMICOL>
