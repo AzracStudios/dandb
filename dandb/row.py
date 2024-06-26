@@ -1,62 +1,47 @@
 from typing import Any
-from dandb.data import Type, Data
-
-
-class Column:
-
-    def __init__(self, column_name: str, data_type: Type = Type.NULL):
-        self.column_name: str = column_name
-        self.type: Type = data_type
-
+from dandb.data import Data
+from dandb.column import Column
 
 class Row:
 
     def __init__(
         self,
         values: list[Data],
-        index_hash: dict[str, int] = {},
-        primary: Data | None = None,
+        schema: dict[str, Column]
     ):
-        self.values = values
-        self.index_hash = index_hash
-        self.primary = primary
+        self.schema = schema
+        self.values = self.generate_values(values)
 
-    def check_types(self, schema):
-        if len(self.values) != len(schema):
+    def check_types(self):
+        if len(self.values) != len(self.schema):
             return False  # TODO: RAISE EXCEPTION
 
-        for i, value in enumerate(self.values):
-            if value.type != schema[i].type:
+        for column, value in self.values.items():
+            if value.type != self.schema[column].type:
                 return False  # TODO: RAISE EXCEPTION
 
         return True
 
-    def populate_col_name(self, schema):
-        for i, value in enumerate(self.values):
-            value.column_name = schema[i].column_name
+    def generate_values(self, values: list[Data]) -> dict[str, Data]:
+        vals_dict = {}
 
-        return True
+        for i, column_name in enumerate(self.schema):
+            vals_dict[column_name] = values[i]
 
-    def get_column(self, col_name):
-        if not col_name in self.index_hash.keys():
+        return vals_dict
+
+    def get_column(self, column_name):
+        if not column_name in self.values.keys():
             return False  # TODO: RAISE EXCEPTION
 
-        return self.values[self.index_hash[col_name]]
+        return self.values[column_name]
 
     def update(self, delta: list[tuple[str, Any]]):
-        for colname, value in delta:
-            if not self.get_column(colname):
+        for column_name, value in delta:
+            if not self.get_column(column_name):
                 return False  # TODO: RAISE EXCEPTION
 
-            self.values[self.index_hash[colname]] = value
-
-    def as_pairs(self, schema):
-        to_ret = []
-
-        for i, data in enumerate(self.values):
-            to_ret.append((schema[i].column_name, data))
-
-        return to_ret
+            self.values[column_name] = value
 
     def __repr__(self):
         return "  ".join([str(data.value) for data in self.values])

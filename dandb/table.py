@@ -1,84 +1,91 @@
+from __future__ import annotations
 from dandb.prettyprint import pretty_print
-from dandb.row import Column, Row
-from dandb.constraint import Constraint
+from dandb.data import Data
+from dandb.row import Row
+from dandb.column import Column
+from dandb.condition import Condition
+
 
 class Table:
 
-    def __init__(self, name: str):
+    def __init__(self, name: str, rows: list[Row] = [], schema: list[Column] = []):
         self.name: str = name
-        self.schema: list[Column] = []
-        self.index_hash = {}
-        self.table: list[Row] = []
 
-    def set_schema(self, schema):
-        self.schema = schema
-        for i, column in enumerate(self.schema):
-            self.index_hash[column.column_name] = i
+        self.schema: dict[str, Column] = {}
+        self.set_schema(schema)
 
-    def create(self, row: Row):
-        if not row.check_types(self.schema):
+        self.table: list[Row] = rows
+
+    def set_schema(self, schema: list[Column]):
+        for column in schema:
+            self.schema[column.column_name] = column
+
+    def create(self, values: list[Data]):
+        row = Row(values, self.schema)
+
+        if not row.check_types():
             return
-        row.populate_col_name(self.schema)
-        row.index_hash = self.index_hash
+
         self.table.append(row)
 
-    def fetch_one(self, constraints: list[Constraint]) -> Row | None:
+    def fetch_one(self, conditions: list[Condition]) -> Table | None:
         for row in self.table:
             constraints_passed = 0
 
-            for constraint in constraints:
+            for constraint in conditions:
                 if not constraint.evaluate(row):
                     continue
                 constraints_passed += 1
 
-            if constraints_passed == len(constraints):
-                return row
+            if constraints_passed == len(conditions):
+                return Table("_", rows=[row], schema=self.schema.values())
+
         return None
 
-    def fetch_all(self, constraints: list[Constraint]) -> list[Row]:
+    def fetch_all(self, conditions: list[Condition]) -> Table:
         rows = []
 
         for row in self.table:
             constraints_passed = 0
 
-            for constraint in constraints:
+            for constraint in conditions:
                 if not constraint.evaluate(row):
                     continue
                 constraints_passed += 1
 
-            if constraints_passed == len(constraints):
+            if constraints_passed == len(conditions):
                 rows.append(row)
 
-        return rows
+        return Table("_", rows=rows, schema=self.schema.values())
 
-    def update(self, constraints, delta) -> Row:
+    def update(self, conditions: list[Condition], delta) -> Row:
         updated_rows = []
 
         for row in self.table:
             constraints_passed = 0
 
-            for constraint in constraints:
+            for constraint in conditions:
                 if not constraint.evaluate(row):
                     continue
                 constraints_passed += 1
 
-            if constraints_passed == len(constraints):
+            if constraints_passed == len(conditions):
                 row.update(delta)
                 updated_rows.append(row)
 
-        return updated_rows
+        return Table("_", rows=updated_rows, schema=self.schema.values())
 
-    def delete(self, constraints):
+    def delete(self, conditions):
         rows_to_delete = []
         for i, row in enumerate(self.table):
             constraints_passed = 0
 
-            for constraint in constraints:
+            for constraint in conditions:
                 if not constraint.evaluate(row):
                     continue
                 constraints_passed += 1
 
-            if constraints_passed == len(constraints):
+            if constraints_passed == len(conditions):
                 rows_to_delete.append((i, row))
 
         for i, row in rows_to_delete:

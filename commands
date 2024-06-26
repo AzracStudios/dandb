@@ -1,0 +1,44 @@
+create database sample;
+
+select table sample;
+
+create table users {
+  id: int
+  name: string
+  email: string
+  password: string
+};
+
+~~~~~~~~~
+~ WRITE ~
+~~~~~~~~~
+write to users {
+  id = 1
+  name = "Bob"
+  email = "abc@xyz.com"
+  password = "123"
+};
+
+write to users {
+  id = 2
+  name = "Sam"
+  email = "xyz@abc.com"
+  password = "456"
+};
+
+write to users {
+  id = 3
+  name = "Rob"
+  email = "123@xyz.com"
+  password = "789"
+};
+
+write to users {
+  id = 4
+  name = "Jim"
+  email = "xyz@123.com"
+  password = "abc"
+};
+
+
+

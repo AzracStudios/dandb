@@ -1,5 +1,11 @@
 select database xyz;
 
+data = [
+    (1, "Bob", "abc@xyz.com", "123"),
+    (2, "Sam", "xyz@abc.com", "456"),
+    (3, "Rob", "123@xyz.com", "789"),
+    (4, "Jim", "xyz@123.com", "abc"),
+]
 
 ~~~~~~~~~~
 ~ CREATE ~
@@ -14,10 +20,10 @@ create table users {
 };
 
 write to users {
-  id = 123
-  name = "Michael"
-  email = "iamphysics@gmail.com"
-  password = "aksdfjnakjsdfkj"
+  id = 1
+  name = "Bob"
+  email = "abc@xyz.com"
+  password = "123"
 };
 
 ~~~~~~~~

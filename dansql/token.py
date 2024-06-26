@@ -2,6 +2,20 @@ from __future__ import annotations
 
 from dansql.position import Position
 
+KEYWORDS = [
+  "select",
+  "write",
+  "create",
+  "fetchall",
+  "fetchone",
+  "update",
+  "delete",
+  "to",
+  "from",
+  "database",
+  "table",
+  "commit"
+]
 
 class Token:
 
@@ -32,16 +46,17 @@ class TokenType:
 
   COMPARE_OP = "COMPARE_OPERATOR"
   ASSIGN_OP = "ASSIGN_OPERATOR"
+  ARITH_OP = "ARITH_OP"
 
   LBRACE = "LBRACE"
   RBRACE = "RBRACE"
   
-  LBRACK = "LBRAC"
-  RBRACK = "RBRACK"
+  LSQBRAC = "LSQBRAC"
+  RSQBRAC = "RSQBRAC"
 
   SEMICOL= "SEMICOL"
   COL = "COL"
   
+  WHITESPACE = "WHITESPACE"
   NEWLINE = "NEWLINE"
-  EOF = "EOF"
-  
+  EOF = "EOF" 

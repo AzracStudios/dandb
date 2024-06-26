@@ -1,66 +1,57 @@
 import math
 
 
+def generate_space(cell_width: int, content_width: int) -> tuple[str, str]:
+    factor = (cell_width - content_width) / 2
+
+    if int(factor) == factor:
+        return (" " * int(factor), " " * int(factor))
+
+    return (" " * int(factor - 0.5), " " * int(factor + 0.5))
+
+
 def pretty_print(schema, rows):
-    print_buffer = {}
+    column_width = {}
 
     if not len(rows):
         return ""
 
-    for column in schema:
-        print_buffer[column.column_name] = []
-
+    # compute width for all columns
     for row in rows:
-        for column, value in row.as_pairs(schema):
-            print_buffer[column].append(f"{value}")
+        for column, value in row.values.items():
+            existing_buffer = column_width.get(column, None)
 
-    # HEADER ROW
-    top_btm_border = "+"
+            if existing_buffer == None or existing_buffer < len(f"{value.value}"):
+                column_width[column] = len(f"{value.value}")
 
-    for column in schema:
-        print_buffer[column.column_name] = (
-            max(len(column.column_name), len(max(print_buffer[column.column_name]))) + 2
-        )
+    # the width values must be revisited, since it is a possibility
+    # that the width of the largest item is less than the column name itself
+    border = "+"
+    for column, count in column_width.items():
+        length_to_set = count
 
-        top_btm_border += "-" * print_buffer[column.column_name]
-        top_btm_border += "+"
+        if len(column) > length_to_set:
+            length_to_set = len(column)
 
+        column_width[column] = length_to_set + 2
+
+        # generate classic mysql border
+        border += f'{"-" * column_width[column]}+'
+
+    # create table header
     header = "|"
 
-    for column in schema:
-        space = " " * math.ceil(
-            (print_buffer[column.column_name] - len(column.column_name)) / 2
-        )
-
-        header += space + column.column_name + space + "|"
+    for column, value in schema.items():
+        lspace, rspace = generate_space(column_width[column], len(column))
+        header += f"{lspace}{column}{rspace}|"
 
     vals = ""
     for row in rows:
         vals += "|"
-        for column, value in row.as_pairs(schema):
-            numspaces = (print_buffer[column] - len(str(value))) / 2
-            if int(numspaces) == numspaces:
-                vals += (
-                    (" " * int(numspaces)) + str(value) + (" " * int(numspaces)) + "|"
-                )
-            else:
-                space = " " * int(numspaces - 0.5)
-                vals += (
-                    (" " * int(numspaces))
-                    + str(value)
-                    + (" " * int(numspaces + 0.5))
-                    + "|"
-                )
+        for column, value in row.values.items():
+            lspace, rspace = generate_space(column_width[column], len(f"{value.value}"))
+            vals += f"{lspace}{value}{rspace}|"
 
         vals += "\n"
 
-    return (
-        top_btm_border
-        + "\n"
-        + header
-        + "\n"
-        + top_btm_border
-        + "\n"
-        + vals
-        + top_btm_border
-    )
+    return f"{border}\n{header}\n{border}\n{vals}{border}"

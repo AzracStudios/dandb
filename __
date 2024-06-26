@@ -1,0 +1,60 @@
+from dandb.database import Database
+from dandb.row import Column, Row
+from dandb.data import Type, Data
+from dandb.condition import Condition, Operation
+from dandb.prettyprint import pretty_print
+
+if __name__ == "__main__":
+    db = Database("myfirstdb")
+
+    table = db.get_table("drink")
+
+    if not table:  # create table if not exists
+        table = db.create_table("drink")
+        print(table)
+
+        schema = [
+            Column("sno", Type.INT),
+            Column("name", Type.STRING),
+            Column("age", Type.INT),
+            Column("gender", Type.STRING),
+            Column("candrink", Type.INT),
+        ]
+        table.set_schema(schema)
+
+    schema = table.schema
+
+    row1 = [
+        Data(Type.INT, 1),
+        Data(Type.STRING, "Ram"),
+        Data(Type.INT, 16),
+        Data(Type.STRING, "Male"),
+        Data(Type.INT, 0),
+    ]
+
+    row2 = [
+        Data(Type.INT, 2),
+        Data(Type.STRING, "Sam"),
+        Data(Type.INT, 22),
+        Data(Type.STRING, "Male"),
+        Data(Type.INT, 0),
+    ]
+
+    row3 = [
+        Data(Type.INT, 3),
+        Data(Type.STRING, "John"),
+        Data(Type.INT, 27),
+        Data(Type.STRING, "Male"),
+        Data(Type.INT, 0),
+    ]
+
+    # print("\nCREATE")
+
+    # table.create(row1)
+    # table.create(row2)
+    # table.create(row3)
+    # db.commit()
+
+    print("\nPeople who can't drink")
+    val = table.fetch_all([Condition("candrink", Operation.EQUAL, 0)])
+    print(val)

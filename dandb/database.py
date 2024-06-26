@@ -1,21 +1,20 @@
 import os, pathlib, pickle
 from dandb.table import Table
+import dansql.command as command
+from dandb.column import Column
 
 
 class Database:
 
-    def __init__(self, name: str):
-        self.name: str = name
-        self.tables: list[Table] = []
-        self.index_hash: dict[str, int] = {}
+    def __init__(self):
+        self.name: str | None = None
+        self.tables: dict[str, Table] = {}
         self.path_to_load: str = ""
-
-        self.configure_path()
-        self.load()
+        self.db_initialized: bool = False
 
     def configure_path(self):
         self.path_to_load = os.path.join(
-            pathlib.Path(__file__).parent.resolve().parent.resolve(),
+            pathlib.Path(__file__).parent.parent.resolve(),
             "databases",
             f"{self.name}.dandb",
         )
@@ -35,23 +34,49 @@ class Database:
         if os.path.getsize(self.path_to_load) == 0:
             return
 
+        # load tables and generate hash
         with open(self.path_to_load, "rb") as f:
             self.tables = pickle.load(f)
-            for i, table in enumerate(self.tables):
-                self.index_hash[table.name] = i
+
+    def execute(self, command):
+        return getattr(self, command.command)(command)
+
+    def create_db(self, command: command.CreateDB):
+        if self.db_initialized:
+            self.commit()
+             
+        self.name = command.dbname
+
+        self.configure_path()
+        self.load()
+
+        self.db_initialized = True
+
+    def select_db(self, command: command.SelectDB):
+        if self.tables:
+            self.commit()
+
+        self.name = command.dbname
+
+        self.configure_path()
+        self.load()
+
+    # def create_table(self, command: command.CreateTable):
+    #     if command.table_name in self.tables.keys():
+    #         return None
+
 
     def get_table(self, name):
-        if name not in self.index_hash.keys():
+        if name not in self.tables.keys():
             return None  # TODO: RAISE EXCEPTION
 
-        return self.tables[self.index_hash[name]]
+        return self.tables[name]
 
-    def create_table(self, name: str):
-        if name in self.index_hash.keys():
+    def create_table(self, name: str, schema: list[Column]):
+        if name in self.tables.keys():
             return None  # TODO: RAISE EXCEPTION
 
-        table = Table(name)
-        self.tables.append(table)
-        self.index_hash[name] = len(self.tables) - 1
+        table = Table(name, schema=schema)
+        self.tables[name] = table
 
         return self.get_table(name)
